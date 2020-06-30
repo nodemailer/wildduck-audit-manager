@@ -1,0 +1,11 @@
+# NB! collection names are as is
+# Database names are configurable variable names. Leave empty for default database
+---
+indexes:
+    - collection: users
+      disabled: true
+      index:
+          name: unique_email
+          unique: true
+          key:
+              email: 1

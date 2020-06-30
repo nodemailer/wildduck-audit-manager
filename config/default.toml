@@ -1,0 +1,34 @@
+
+[log]
+    level = "trace"
+
+[process]
+    title = "srvdev"
+
+[web]
+    enabled = true
+    workers = 2
+    port = 7000
+    host = "127.0.0.1"
+    proxy = false
+    postSize = "5MB"
+
+    [web.cookie]
+        #   pwgen -N 1 -s 64
+        name = "wdam"
+        secret = "a cat"
+        secure = false
+
+[dbs]
+    mongo = "mongodb://127.0.0.1:27017/wildduck"
+    redis="redis://127.0.0.1:6379/7"
+
+[users]
+    [users.admin]
+        enabled = true
+        level = "root"
+        # Command for generating password hash in Linux:
+        #   echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | sha256sum | cut -d" " -f1
+        # Or in OSX:
+        #   echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | shasum -a 256 | cut -d" " -f1
+        passwordHash = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" # test

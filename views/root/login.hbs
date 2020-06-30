@@ -1,0 +1,31 @@
+<h3>Log in</h3>
+
+<form action="/login" method="post">
+    {{ csrf_token }}
+
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" class="form-control {{#if errors.username}}is-invalid{{/if}}" id="username" name="username"
+            value="{{values.username}}">
+        {{#if errors.username}}
+        <div class="invalid-feedback">
+            {{errors.username}}
+        </div>
+        {{/if}}
+    </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="password" name="password">
+    </div>
+    <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input {{#if errors.remember}}is-invalid{{/if}}" id="remember"
+            name="remember" {{#if values.remember}}checked{{/if}}>
+        <label class="form-check-label" for="remember">Remember me</label>
+        {{#if errors.remember}}
+        <div class="invalid-feedback">
+            {{errors.remember}}
+        </div>
+        {{/if}}
+    </div>
+    <button type="submit" class="btn btn-primary">Log in</button>
+</form>
