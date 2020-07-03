@@ -5,6 +5,13 @@
 [process]
     title = "srvdev"
 
+[app]
+    name = "Audit Manager"
+    clientUrl = "https://audit.wildduck.email/"
+    [app.pgp]
+        #version = "WildDuck Audit v1.0.0"
+        #comment = "https://wildduck.email"
+
 [web]
     enabled = true
     workers = 2

@@ -5,6 +5,7 @@
 const cluster = require('cluster');
 const logger = require('../lib/logger');
 const config = require('wild-config');
+const audits = require('../lib/audits');
 
 const workerName = 'web';
 
@@ -57,6 +58,7 @@ if (cluster.isMaster) {
 
     const init = async () => {
         await db.connect();
+        audits.init();
         await webApp.start();
     };
 

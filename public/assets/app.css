@@ -27,3 +27,10 @@ html {
     margin-right: auto;
     display: block;
 }
+
+a.fullcell {
+    text-decoration: inherit;
+    font-size: inherit;
+    color: inherit;
+    display: block;
+}

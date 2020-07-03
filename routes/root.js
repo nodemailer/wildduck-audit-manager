@@ -6,7 +6,7 @@ const Joi = require('@hapi/joi');
 const { asyncifyRequest, validationErrors } = require('../lib/tools');
 const { requireLogin, login, logout } = require('../lib/passport');
 
-router.use('/account', requireLogin, require('./account/index'));
+router.use('/audits', requireLogin, require('./audits/index'));
 
 router.get(
     '/',
@@ -80,6 +80,18 @@ router.get(
         req.flash('success', `Future feature 2`);
         req.flash('danger', `Something else`);
         res.redirect('/');
+    })
+);
+
+router.get(
+    '/accounts/list',
+    asyncifyRequest(async (req, res) => {
+        console.log(req.query);
+        res.json([
+            { id: 1, name: 'John' },
+            { id: 2, name: 'Alex' },
+            { id: 3, name: 'Terry' }
+        ]);
     })
 );
 

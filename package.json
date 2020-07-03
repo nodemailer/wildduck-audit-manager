@@ -26,15 +26,21 @@
         "csurf": "^1.11.0",
         "express": "4.17.1",
         "express-session": "^1.17.1",
+        "generate-password": "^1.5.1",
         "hbs": "4.1.1",
         "ioredis": "4.17.3",
         "js-yaml": "3.14.0",
+        "libmime": "^4.2.1",
+        "moment": "^2.27.0",
         "mongodb": "3.5.9",
+        "nodemailer": "^6.4.10",
+        "openpgp": "^4.10.4",
         "passport": "^0.4.1",
         "passport-local": "^1.0.0",
         "pino": "6.3.2",
         "pino-http": "5.2.0",
         "shortid": "2.2.15",
-        "wild-config": "1.5.1"
+        "wild-config": "1.5.1",
+        "wildduck": "^1.26.3"
     }
 }
