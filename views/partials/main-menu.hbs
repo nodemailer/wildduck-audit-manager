@@ -14,6 +14,12 @@
                 </li>
                 {{/if}}
             </ul>
+
+            {{#if user}}
+            <span class="navbar-text">
+                {{user.username}}
+            </span>
+            {{/if}}
             <form class="form-inline mt-2 mt-md-0">
                 {{#if user}}
                 <a href="/logout" class="btn btn-link my-2 my-sm-0">Log out</a>

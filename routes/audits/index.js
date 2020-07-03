@@ -228,6 +228,115 @@ router.get(
 );
 
 router.get(
+    '/audit/:id/edit',
+    asyncifyRequest(async (req, res) => {
+        let auditListingSchema = Joi.object({
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+        });
+
+        const validationResult = auditListingSchema.validate(req.params, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        if (validationResult.error) {
+            req.flash('danger', 'Invalid audit ID provided');
+            return res.redirect('/audits');
+        }
+        const values = (validationResult && validationResult.value) || {};
+        const auditData = await audits.get(values.id);
+        if (!auditData) {
+            req.flash('danger', 'Requested audit was not found');
+            return res.redirect('/audits');
+        }
+        const now = new Date();
+        auditData.expires = moment(auditData.expires || now).format('YYYY/MM/DD');
+
+        console.log(auditData);
+        const data = {
+            title: 'Edit',
+            mainMenuAudit: true,
+            layout: 'layouts/main',
+            audit: auditData,
+            values: auditData
+        };
+
+        res.render('audits/edit', data);
+    })
+);
+
+router.post(
+    '/edit',
+    asyncifyRequest(async (req, res) => {
+        let loginSchema = Joi.object({
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID'),
+            expires: Joi.date().greater('now').example('2020/01/02').label('Expiration date').description('Expiration date')
+        });
+
+        const validationResult = loginSchema.validate(req.body, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        const now = new Date();
+        const values = (validationResult && validationResult.value) || {};
+
+        let showErrors = async (errors, disableDefault) => {
+            if (!disableDefault) {
+                req.flash('danger', 'Failed to create account audit');
+            }
+
+            const auditData = await audits.get(values.id);
+            if (!auditData) {
+                req.flash('danger', 'Requested audit was not found');
+                return res.redirect('/audits');
+            }
+
+            values.expires = moment(values.expires || now).format('YYYY/MM/DD');
+
+            const data = {
+                title: 'Create audit',
+                mainMenuAudit: true,
+                audit: auditData,
+
+                values,
+                errors,
+
+                layout: 'layouts/main'
+            };
+
+            res.render('audits/edit', data);
+        };
+
+        if (validationResult.error) {
+            let errors = validationErrors(validationResult);
+            return showErrors(errors);
+        }
+
+        try {
+            let expires = values.expires ? moment(values.expires || now).format('YYYY-MM-DD') + 'T00:00:00Z' : null;
+
+            const updates = {
+                expires: expires ? new Date(expires) : null
+            };
+
+            const updated = await audits.update(values.id, updates);
+
+            if (updated) {
+                req.flash('success', 'Account audit was updated');
+            }
+
+            res.redirect(`/audits/audit/${values.id}`);
+        } catch (err) {
+            req.flash('danger', err.message);
+            return showErrors(false, true);
+        }
+    })
+);
+
+router.get(
     '/audit/:id/creds/new',
     asyncifyRequest(async (req, res) => {
         let auditListingSchema = Joi.object({
@@ -371,6 +480,68 @@ router.post(
             req.flash('danger', 'Failed to create credentials');
             return showErrors(false, false);
         }
+    })
+);
+
+router.post(
+    '/creds/delete',
+    asyncifyRequest(async (req, res) => {
+        let auditListingSchema = Joi.object({
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+        });
+
+        const validationResult = auditListingSchema.validate(req.body, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        console.log(validationResult);
+
+        if (validationResult.error) {
+            req.flash('danger', 'Invalid credential ID provided');
+            return res.redirect('/audits');
+        }
+        const values = (validationResult && validationResult.value) || {};
+        const credentials = await audits.getCredentials(values.id);
+        if (!credentials) {
+            req.flash('danger', 'Requested credentials were not found');
+            return res.redirect('/audits');
+        }
+
+        await audits.deleteCredentials(values.id);
+        req.flash('success', 'Credentials deleted');
+        return res.redirect(`/audits/audit/${credentials.audit}`);
+    })
+);
+
+router.post(
+    '/delete',
+    asyncifyRequest(async (req, res) => {
+        let auditListingSchema = Joi.object({
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+        });
+
+        const validationResult = auditListingSchema.validate(req.body, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        if (validationResult.error) {
+            req.flash('danger', 'Invalid audit ID provided');
+            return res.redirect('/audits');
+        }
+        const values = (validationResult && validationResult.value) || {};
+        const auditData = await audits.get(values.id);
+        if (!auditData) {
+            req.flash('danger', 'Requested audit was not found');
+            return res.redirect('/audits');
+        }
+
+        await audits.deleteAudit(values.id);
+        req.flash('success', 'Audit deleted');
+        return res.redirect(`/audits`);
     })
 );
 
