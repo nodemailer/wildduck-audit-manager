@@ -213,6 +213,10 @@ router.get(
             return credential;
         });
 
+        if (auditData.meta && auditData.meta.created) {
+            auditData.meta.created = auditData.meta.created.toISOString();
+        }
+
         console.log(auditData);
         const data = {
             title: 'Audit',
