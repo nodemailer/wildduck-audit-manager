@@ -90,8 +90,9 @@
                 <tr>
                     <td style="vertical-align: middle;">{{name}}</td>
                     <td style="vertical-align: middle;">{{email}}</td>
-                    <td style="vertical-align: middle;"><span
-                            style="font-family: monospace;">{{keyData.fingerprint}}</span>
+                    <td style="vertical-align: middle;"><span title="{{keyData.name}} &lt;{{keyData.address}}&gt;"
+                            data-toggle="tooltip" data-placement="left"
+                            style="cursor:default; font-family: monospace;">{{keyData.fingerprint}}</span>
                     </td>
                     <td style="vertical-align: middle;">{{createdBy}} (<span class="timestr"
                             title="{{created}}">{{created}}</span>)</td>
