@@ -91,6 +91,11 @@ router.post(
             daterangeStart: Joi.date().example('2020/01/02').label('Start date').description('Start date'),
             daterangeEnd: Joi.date().greater(Joi.ref('daterangeStart')).example('2020/01/02').label('End date').description('End date'),
             expires: Joi.date().greater('now').example('2020/01/02').label('Expiration date').description('Expiration date'),
+            authlog: Joi.boolean()
+                .truthy('Y', 'true', '1', 'on')
+                .default(false)
+                .label('Authentiation log')
+                .description('Include authnetication log as part of the audit'),
             notes: Joi.string().empty('').trim().required().label('Notes').description('Reason for creating an audit')
         });
 
@@ -157,6 +162,7 @@ router.post(
                     name: account.name,
                     username: account.username,
                     address: account.address,
+                    authlog: !!values.authlog,
                     ip: req.ip,
                     createdBy: req.user.username,
                     created: new Date()
@@ -256,6 +262,7 @@ router.get(
         }
         const now = new Date();
         auditData.expires = moment(auditData.expires || now).format('YYYY/MM/DD');
+        auditData.authlog = !!(auditData.meta && auditData.meta.authlog);
 
         console.log(auditData);
         const data = {
@@ -275,7 +282,12 @@ router.post(
     asyncifyRequest(async (req, res) => {
         let loginSchema = Joi.object({
             id: Joi.string().empty('').hex().length(24).required().label('Audit ID'),
-            expires: Joi.date().greater('now').example('2020/01/02').label('Expiration date').description('Expiration date')
+            expires: Joi.date().greater('now').example('2020/01/02').label('Expiration date').description('Expiration date'),
+            authlog: Joi.boolean()
+                .truthy('Y', 'true', '1', 'on')
+                .default(false)
+                .label('Authentiation log')
+                .description('Include authnetication log as part of the audit')
         });
 
         const validationResult = loginSchema.validate(req.body, {
@@ -323,7 +335,8 @@ router.post(
             let expires = values.expires ? moment(values.expires || now).format('YYYY-MM-DD') + 'T00:00:00Z' : null;
 
             const updates = {
-                expires: expires ? new Date(expires) : null
+                expires: expires ? new Date(expires) : null,
+                'meta.authlog': values.authlog
             };
 
             const updated = await audits.update(values.id, updates);
