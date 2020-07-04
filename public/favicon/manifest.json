@@ -1,6 +1,6 @@
 {
-    "name": "imapapi",
-    "short_name": "imapapi",
+    "name": "WildDuck Audit Manager",
+    "short_name": "Audit Manager",
     "icons": [
         {
             "src": "/favicon/android-chrome-192x192.png",
