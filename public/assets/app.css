@@ -34,3 +34,12 @@ a.fullcell {
     color: inherit;
     display: block;
 }
+
+.droptxt {
+    font-family: monospace;
+    font-size: 0.8em;
+}
+
+.dragover {
+    box-shadow: 2px 2px #888888;
+}

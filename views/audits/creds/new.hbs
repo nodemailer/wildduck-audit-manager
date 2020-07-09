@@ -36,9 +36,8 @@
 
     <div class="form-group">
         <label for="pgpPubKey">PGP public key</label>
-        <textarea class="form-control {{#if errors.pgpPubKey}}is-invalid{{/if}}" id="pgpPubKey" name="pgpPubKey"
-            rows="3" style="font-family: monospace;" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----…"
-            required>{{values.pgpPubKey}}</textarea>
+        <textarea class="form-control droptxt {{#if errors.pgpPubKey}}is-invalid{{/if}}" id="pgpPubKey" name="pgpPubKey"
+            rows="3" placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----…" required>{{values.pgpPubKey}}</textarea>
         {{#if errors.pgpPubKey}}
         <div class="invalid-feedback">
             {{errors.pgpPubKey}}

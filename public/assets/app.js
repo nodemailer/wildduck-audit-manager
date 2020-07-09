@@ -1,4 +1,4 @@
-/* globals document, $, moment */
+/* globals document, $, moment, FileReader */
 /* eslint no-invalid-this:0 */
 'use strict';
 
@@ -47,4 +47,45 @@ document.addEventListener('DOMContentLoaded', () => {
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
     });
+
+    function dropfile(elm, file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            elm.value = (e.target.result || '').trim();
+            elm.focus();
+            elm.select();
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    for (let elm of document.querySelectorAll('.droptxt')) {
+        elm.addEventListener('dragenter', () => {
+            elm.classList.add('dragover');
+        });
+
+        elm.addEventListener('dragleave', () => {
+            elm.classList.remove('dragover');
+        });
+
+        elm.addEventListener('drop', e => {
+            e.preventDefault();
+            elm.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            dropfile(elm, file);
+        });
+
+        elm.addEventListener('click', () => {
+            elm.focus();
+            elm.select();
+        });
+    }
+
+    for (let elm of document.querySelectorAll('.click-once')) {
+        elm.addEventListener('click', () => {
+            setTimeout(() => {
+                $(elm).tooltip('dispose');
+                elm.parentNode.removeChild(elm);
+            }, 100);
+        });
+    }
 });

@@ -1,0 +1,77 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/users">Users</a></li>
+        <li class="breadcrumb-item"><a href="/users/user/{{userData._id}}">{{userData.name}}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit user</li>
+    </ol>
+</nav>
+
+<form action="/users/edit" method="post">
+    {{ csrf_token }}
+    <input type="hidden" name="id" value="{{userData._id}}" />
+
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" readonly class="form-control-plaintext" id="username" value="{{userData.username}}">
+    </div>
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" class="form-control {{#if errors.name}}is-invalid{{/if}} name" id="name" name="name"
+            value="{{values.name}}" required>
+        {{#if errors.name}}
+        <div class="invalid-feedback">
+            {{errors.name}}
+        </div>
+        {{/if}}
+        <small class="form-text text-muted">Name of the user.</small>
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" class="form-control {{#if errors.email}}is-invalid{{/if}} email" id="email" name="email"
+            value="{{values.email}}" required>
+        {{#if errors.email}}
+        <div class="invalid-feedback">
+            {{errors.email}}
+        </div>
+        {{/if}}
+        <small class="form-text text-muted">Email address of the user.</small>
+    </div>
+
+    <div class="form-group">
+        <label for="level">Level</label>
+
+        <select class="custom-select {{#if errors.level}}is-invalid{{/if}}" id="level" name="level" required>
+            {{#each levels}}
+            <option value="{{level}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+            {{/each}}
+        </select>
+
+        {{#if errors.level}}
+        <div class="invalid-feedback">
+            {{errors.level}}
+        </div>
+        {{/if}}
+        <small class="form-text text-muted">User permissions level. Administrator accounts can manage other
+            accounts.</small>
+    </div>
+
+    <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input {{#if errors.resetPassword}}is-invalid{{/if}}" id="resetPassword"
+            name="resetPassword" {{#if values.resetPassword}}checked{{/if}}>
+        <label class="form-check-label" for="resetPassword">Regenerate credentials</label>
+        {{#if errors.resetPassword}}
+        <div class="invalid-feedback">
+            {{errors.resetPassword}}
+        </div>
+        {{/if}}
+        <small class="form-text text-muted">Check this to generate new credentials for this user. Password is encrypted
+            using <span title="{{userData.keyData.name}} &lt;{{userData.keyData.address}}&gt;" data-toggle="tooltip"
+                data-placement="left" style="cursor:default; font-family: monospace;">{{fingerprint}}</span>.</small>
+    </div>
+
+    <div class="mt-3 mb-3">
+        <button type="submit" class="btn btn-primary">Update user</button>
+    </div>
+</form>

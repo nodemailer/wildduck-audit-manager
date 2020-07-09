@@ -7,10 +7,14 @@
 
 [app]
     name = "Audit Manager"
+    adminUrl = "https://audit-manager.wildduck.email/"
     clientUrl = "https://audit.wildduck.email/"
     [app.pgp]
         #version = "WildDuck Audit v1.0.0"
         #comment = "https://wildduck.email"
+        [app.pgp.sign]
+            key = "./config/sign.pem"
+            password = "08Sgipx582LZFNxjMQVRDH5kf1l"
 
 [web]
     enabled = true
@@ -30,12 +34,11 @@
     mongo = "mongodb://127.0.0.1:27017/wildduck"
     redis="redis://127.0.0.1:6379/7"
 
-[users]
-    [users.admin]
-        enabled = true
-        level = "root"
-        # Command for generating password hash in Linux:
-        #   echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | sha256sum | cut -d" " -f1
-        # Or in OSX:
-        #   echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | shasum -a 256 | cut -d" " -f1
-        passwordHash = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" # test
+[root]
+    # default root user
+    enabled = true
+    # Command for generating password hash in Linux:
+    #   echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | sha256sum | cut -d" " -f1
+    # Or in OSX:
+    #   echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | shasum -a 256 | cut -d" " -f1
+    passwordHash = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" # test

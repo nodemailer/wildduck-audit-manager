@@ -13,12 +13,30 @@
                     <a class="nav-link" href="/audits">Account Audits</a>
                 </li>
                 {{/if}}
+
+                {{#if user.isAdmin}}
+                <li class="nav-item {{#if mainMenuUsers}}active{{/if}}">
+                    <a class="nav-link" href="/users">Users</a>
+                </li>
+                {{/if}}
             </ul>
 
             {{#if user}}
+
+            {{#if hasAccount}}
+
+            <ul class="navbar-nav">
+                <li class="nav-item {{#if mainMenuAccount}}active{{/if}}">
+                    <a class="nav-link" href="/account">{{user.name}}</a>
+                </li>
+            </ul>
+
+            {{ else }}
             <span class="navbar-text">
-                {{user.username}}
+                {{user.name}}
             </span>
+            {{/if}}
+
             {{/if}}
             <form class="form-inline mt-2 mt-md-0">
                 {{#if user}}

@@ -2,10 +2,23 @@
 # Database names are configurable variable names. Leave empty for default database
 ---
 indexes:
-    - collection: users
-      disabled: true
+    - collection: auditusers
       index:
-          name: unique_email
+          name: list_audit
+          key:
+              audit: 1
+              deleted: 1
+
+    - collection: auditusers
+      index:
+          name: audit_users
           unique: true
           key:
-              email: 1
+              username: 1
+
+    - collection: auditusers
+      index:
+          name: audit_users_level
+          key:
+              level: 1
+              deleted: 1

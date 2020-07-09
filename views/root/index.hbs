@@ -1,3 +1,14 @@
-<main class="bd-masthead">
-    <h3>{{msg}}</h3>
-</main>
+{{#if user}}
+
+
+<div class="jumbotron">
+    <h1 class="display-4">{{appName}}</h1>
+    <p class="lead">Account audit allows to monitor emails received and sent during a selected period.</p>
+    <hr class="my-4">
+    <p>All emails are copied so deleting a message from the audited account does not delete the copy from the auditing
+        system. Audit includes messages that are deleted but not yer permanently purged.</p>
+</div>
+
+{{else}}
+<p class="lead mt-3">Please log in to continue.</p>
+{{/if}}

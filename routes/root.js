@@ -4,9 +4,11 @@ const express = require('express');
 const router = new express.Router();
 const Joi = require('@hapi/joi');
 const { asyncifyRequest, validationErrors } = require('../lib/tools');
-const { requireLogin, login, logout } = require('../lib/passport');
+const { requireLogin, requireAdmin, login, logout } = require('../lib/passport');
 
 router.use('/audits', requireLogin, require('./audits/index'));
+router.use('/account', requireLogin, require('./account/index'));
+router.use('/users', requireAdmin, require('./users/index'));
 
 router.get(
     '/',

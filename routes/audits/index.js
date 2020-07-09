@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = new express.Router();
-const { asyncifyRequest, validationErrors, checkPubKey } = require('../../lib/tools');
+const { asyncifyRequest, validationErrors, checkPubKey, signFinger } = require('../../lib/tools');
 const audits = require('../../lib/audits');
 const Joi = require('@hapi/joi');
 const moment = require('moment');
@@ -199,21 +199,23 @@ router.get(
         });
 
         if (validationResult.error) {
-            req.flash('danger', 'Invalid audit ID provided');
-            return res.redirect('/audits');
+            let err = new Error('Invalid audit ID provided');
+            err.status = 422;
+            throw err;
         }
         const values = (validationResult && validationResult.value) || {};
         const auditData = await audits.get(values.id);
         if (!auditData) {
-            req.flash('danger', 'Requested audit was not found');
-            return res.redirect('/audits');
+            let err = new Error('Requested audit was not found');
+            err.status = 404;
+            throw err;
         }
 
         let credentials = await audits.listCredentials(auditData._id);
 
         credentials = credentials.map(credential => {
             if (credential && credential.keyData && credential.keyData.fingerprint) {
-                credential.keyData.fingerprint = credential.keyData.fingerprint.split(':').slice(-8).join(':');
+                credential.keyData.fingerprint = credential.keyData.fingerprint.split(':').slice(-8).join('').toUpperCase();
             }
             credential.created = credential.created.toISOString();
             return credential;
@@ -230,7 +232,8 @@ router.get(
             layout: 'layouts/main',
 
             audit: auditData,
-            credentials
+            credentials,
+            signFinger: signFinger()
         };
 
         res.render('audits/audit', data);
@@ -251,14 +254,16 @@ router.get(
         });
 
         if (validationResult.error) {
-            req.flash('danger', 'Invalid audit ID provided');
-            return res.redirect('/audits');
+            let err = new Error('Invalid audit ID provided');
+            err.status = 422;
+            throw err;
         }
         const values = (validationResult && validationResult.value) || {};
         const auditData = await audits.get(values.id);
         if (!auditData) {
-            req.flash('danger', 'Requested audit was not found');
-            return res.redirect('/audits');
+            let err = new Error('Requested audit was not found');
+            err.status = 404;
+            throw err;
         }
         const now = new Date();
         auditData.expires = moment(auditData.expires || now).format('YYYY/MM/DD');
@@ -306,8 +311,9 @@ router.post(
 
             const auditData = await audits.get(values.id);
             if (!auditData) {
-                req.flash('danger', 'Requested audit was not found');
-                return res.redirect('/audits');
+                let err = new Error('Requested audit was not found');
+                err.status = 404;
+                throw err;
             }
 
             values.expires = moment(values.expires || now).format('YYYY/MM/DD');
@@ -367,14 +373,16 @@ router.get(
         });
 
         if (validationResult.error) {
-            req.flash('danger', 'Invalid audit ID provided');
-            return res.redirect('/audits');
+            let err = new Error('Invalid audit ID provided');
+            err.status = 422;
+            throw err;
         }
         const values = (validationResult && validationResult.value) || {};
         const auditData = await audits.get(values.id);
         if (!auditData) {
-            req.flash('danger', 'Requested audit was not found');
-            return res.redirect('/audits');
+            let err = new Error('Requested audit was not found');
+            err.status = 404;
+            throw err;
         }
 
         console.log(auditData);
@@ -391,7 +399,7 @@ router.get(
 );
 
 router.get(
-    '/creds/fetch/:id',
+    '/creds/fetch/:id/credentials.gpg',
     asyncifyRequest(async (req, res) => {
         let auditListingSchema = Joi.object({
             id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
@@ -404,19 +412,22 @@ router.get(
         });
 
         if (validationResult.error) {
-            req.flash('danger', 'Invalid credential ID provided');
-            return res.redirect('/audits');
+            let err = new Error('Invalid credentials ID provided');
+            err.status = 422;
+            throw err;
         }
         const values = (validationResult && validationResult.value) || {};
         const credentials = await audits.getCredentials(values.id);
-        if (!credentials) {
-            req.flash('danger', 'Requested credentials were not found');
-            return res.redirect('/audits');
+        if (!credentials || !credentials.credentials) {
+            let err = new Error('Requested credentials were not found');
+            err.status = 404;
+            throw err;
         }
 
         console.log(credentials);
 
         res.set('Content-Type', 'text/plain');
+        res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');
         res.send(Buffer.from(credentials.credentials));
     })
 );
@@ -447,8 +458,9 @@ router.post(
         const values = (validationResult && validationResult.value) || {};
         const auditData = await audits.get(values.audit);
         if (!auditData) {
-            req.flash('danger', 'Requested audit was not found');
-            return res.redirect('/audits');
+            let err = new Error('Requested audit was not found');
+            err.status = 404;
+            throw err;
         }
 
         let showErrors = async (errors, disableDefault) => {
@@ -516,15 +528,18 @@ router.post(
         console.log(validationResult);
 
         if (validationResult.error) {
-            req.flash('danger', 'Invalid credential ID provided');
-            return res.redirect('/audits');
+            let err = new Error('Invalid credentials ID provided');
+            err.status = 422;
+            throw err;
         }
         const values = (validationResult && validationResult.value) || {};
         const credentials = await audits.getCredentials(values.id);
         if (!credentials) {
-            req.flash('danger', 'Requested credentials were not found');
-            return res.redirect('/audits');
+            let err = new Error('Requested credentials were not found');
+            err.status = 404;
+            throw err;
         }
+        console.log(credentials);
 
         await audits.deleteCredentials(values.id);
         req.flash('success', 'Credentials deleted');
@@ -546,14 +561,16 @@ router.post(
         });
 
         if (validationResult.error) {
-            req.flash('danger', 'Invalid audit ID provided');
-            return res.redirect('/audits');
+            let err = new Error('Invalid audit ID provided');
+            err.status = 422;
+            throw err;
         }
         const values = (validationResult && validationResult.value) || {};
         const auditData = await audits.get(values.id);
         if (!auditData) {
-            req.flash('danger', 'Requested audit was not found');
-            return res.redirect('/audits');
+            let err = new Error('Requested audit was not found');
+            err.status = 404;
+            throw err;
         }
 
         await audits.deleteAudit(values.id);

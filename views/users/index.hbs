@@ -1,13 +1,13 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item active" aria-current="page">Audits</li>
+        <li class="breadcrumb-item active" aria-current="page">Users</li>
     </ol>
 </nav>
 
 <nav class="nav nav-pills" aria-label="Page navigation">
     <div class="nav-item mr-auto">
-        <a class="nav-link active" href="/audits/new">
-            <span>Create audit</span></a>
+        <a class="nav-link active" href="/users/new">
+            <span>Create user</span></a>
     </div>
     <div class="nav-link">Page {{listing.page}} of {{listing.pages}}</div>
     <ul class="pagination">
@@ -68,49 +68,26 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th scope="col">Status</th>
+                <th scope="col">Username</th>
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
-                <th scope="col">Period</th>
-                <th scope="col" colspan="2" Expires</th>
+                <th scope="col" colspan="2">PGP key</th>
             </tr>
         </thead>
         <tbody>
             {{#each listing.data}}
             <tr>
-                <td style="vertical-align: middle;">
-                    <span class="badge badge-{{display.status.type}}">{{display.status.title}}</span>
+                <td style="vertical-align: middle;">{{username}} {{#if label}} <span
+                        class="badge badge-{{label.color}}">{{label.level}}</span> {{/if}}</td>
+                <td style="vertical-align: middle;">{{name}}</td>
+                <td style="vertical-align: middle;">{{email}}</td>
+                <td style="vertical-align: middle;"><span title="{{keyData.name}} &lt;{{keyData.address}}&gt;"
+                        data-toggle="tooltip" data-placement="left"
+                        style="cursor:default; font-family: monospace;">{{keyData.fingerprint}}</span>
                 </td>
-                <td style="vertical-align: middle;">
-                    {{display.name}}
-                </td>
-                <td style="vertical-align: middle;">
-                    {{display.address}}
-                </td>
-                <td style="vertical-align: middle;">
-                    {{#if display.start}}
-                    <span class="timestr" title="{{display.start}}">
-                        {{display.start}}
-                    </span>
-                    {{else}}
-                    –
-                    {{/if}}
-                    –
-                    {{#if display.end}}
-                    <span class="timestr" title="{{display.end}}">
-                        {{display.end}}
-                    </span>
-                    {{else}}
-                    –
-                    {{/if}}
-                </td>
-                <td style="vertical-align: middle;">
-                    <span class="timestr" href="/audits/audit/{{_id}}" title="{{display.expires}}">
-                        {{display.expires}}
-                    </span>
-                </td>
-                <td style="vertical-align: middle;">
-                    <a href="/audits/audit/{{_id}}" class="btn btn-primary btn-sm" title="Go to audit details"
+                <td class="text-right" style="vertical-align: middle;">
+
+                    <a href="/users/user/{{_id}}" class="btn btn-primary btn-sm" title="Go to user details"
                         data-toggle="tooltip" data-placement="left">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-square"
                             fill="currentColor" xmlns="http://www.w3.org/2000/svg">
