@@ -52,7 +52,6 @@ router.get(
             if (level) {
                 userData.label = level;
             }
-            console.log(userData);
         });
 
         if (data.listing.page < data.listing.pages) {
@@ -379,6 +378,48 @@ router.post(
     })
 );
 
+router.post(
+    '/delete',
+    asyncifyRequest(async (req, res) => {
+        let loginSchema = Joi.object({
+            id: Joi.string().empty('').hex().length(24).required().label('User ID')
+        });
+
+        const validationResult = loginSchema.validate(req.body, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        if (validationResult.error) {
+            let err = new Error('Invalid user ID provided');
+            err.status = 422;
+            throw err;
+        }
+
+        const values = (validationResult && validationResult.value) || {};
+
+        let userData = await users.get(values.id);
+        if (!userData) {
+            let err = new Error('User Not Found');
+            err.status = 404;
+            throw err;
+        }
+
+        if (req.user._id && userData._id && req.user._id.equals(userData._id)) {
+            // use account edit instead
+            return res.redirect('/account/edit');
+        }
+
+        const deleted = await users.delete(values.id);
+        if (deleted) {
+            req.flash('success', 'User was deleted');
+        }
+
+        return res.redirect(`/users`);
+    })
+);
+
 router.get(
     '/fetch/:id/credentials.gpg',
     asyncifyRequest(async (req, res) => {
@@ -405,8 +446,6 @@ router.get(
             err.status = 404;
             throw err;
         }
-
-        console.log(credentials);
 
         res.set('Content-Type', 'text/plain');
         res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');

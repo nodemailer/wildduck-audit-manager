@@ -150,8 +150,6 @@ router.post(
             let end = values.daterangeEnd ? moment(values.daterangeEnd || now).format('YYYY-MM-DD') + 'T23:59:00Z' : null;
             let expires = values.expires ? moment(values.expires || now).format('YYYY-MM-DD') + 'T00:00:00Z' : null;
 
-            console.log({ start, end, expires });
-
             const data = {
                 user: account._id,
                 start: start ? new Date(start) : null,
@@ -169,12 +167,7 @@ router.post(
                 }
             };
 
-            console.log(data);
             const audit = await audits.create(data);
-
-            console.log(values);
-            console.log(account);
-            console.log(audit);
 
             req.flash('success', 'Account audit was created');
             res.redirect(`/audits?new=${audit}`);
@@ -225,7 +218,6 @@ router.get(
             auditData.meta.created = auditData.meta.created.toISOString();
         }
 
-        console.log(auditData);
         const data = {
             title: 'Audit',
             mainMenuAudit: true,
@@ -269,7 +261,6 @@ router.get(
         auditData.expires = moment(auditData.expires || now).format('YYYY/MM/DD');
         auditData.authlog = !!(auditData.meta && auditData.meta.authlog);
 
-        console.log(auditData);
         const data = {
             title: 'Edit',
             mainMenuAudit: true,
@@ -385,7 +376,6 @@ router.get(
             throw err;
         }
 
-        console.log(auditData);
         const data = {
             title: 'Create credentials',
             mainMenuAudit: true,
@@ -423,8 +413,6 @@ router.get(
             err.status = 404;
             throw err;
         }
-
-        console.log(credentials);
 
         res.set('Content-Type', 'text/plain');
         res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');
@@ -525,8 +513,6 @@ router.post(
             convert: true
         });
 
-        console.log(validationResult);
-
         if (validationResult.error) {
             let err = new Error('Invalid credentials ID provided');
             err.status = 422;
@@ -539,7 +525,6 @@ router.post(
             err.status = 404;
             throw err;
         }
-        console.log(credentials);
 
         await audits.deleteCredentials(values.id);
         req.flash('success', 'Credentials deleted');

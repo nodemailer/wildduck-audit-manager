@@ -75,26 +75,4 @@ router.post('/login', (req, res, next) => {
     login(req, res, next);
 });
 
-router.get(
-    '/test',
-    asyncifyRequest(async (req, res) => {
-        req.flash('success', `Future feature`);
-        req.flash('success', `Future feature 2`);
-        req.flash('danger', `Something else`);
-        res.redirect('/');
-    })
-);
-
-router.get(
-    '/accounts/list',
-    asyncifyRequest(async (req, res) => {
-        console.log(req.query);
-        res.json([
-            { id: 1, name: 'John' },
-            { id: 2, name: 'Alex' },
-            { id: 3, name: 'Terry' }
-        ]);
-    })
-);
-
 module.exports = router;

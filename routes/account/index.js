@@ -99,8 +99,6 @@ router.post(
 
         const values = (validationResult && validationResult.value) || {};
 
-        console.log(values);
-
         let userData = await users.get(req.user._id);
         if (!userData) {
             let err = new Error('User Not Found');
@@ -162,8 +160,6 @@ router.post(
             });
             updates.passwordUpdated = new Date();
         }
-
-        console.log(updates);
 
         try {
             const updated = await users.update(req.user._id, updates);
