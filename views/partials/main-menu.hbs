@@ -10,7 +10,7 @@
             <ul class="navbar-nav mr-auto">
                 {{#if user}}
                 <li class="nav-item {{#if mainMenuAudit}}active{{/if}}">
-                    <a class="nav-link" href="/audits">Account Audits</a>
+                    <a class="nav-link" href="/audits">Audits</a>
                 </li>
                 {{/if}}
 
@@ -42,7 +42,7 @@
                 {{#if user}}
                 <a href="/logout" class="btn btn-link my-2 my-sm-0">Log out</a>
                 {{else}}
-                <a href="/login" class="btn btn-outline-success my-2 my-sm-0">Log in</a>
+                <a href="/login" class="btn btn-outline-primary my-2 my-sm-0">Log in</a>
                 {{/if}}
             </form>
         </div>
