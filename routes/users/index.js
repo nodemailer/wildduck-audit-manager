@@ -174,7 +174,7 @@ router.post(
                 req.flash('success', 'User created');
 
                 await addToStream(
-                    user,
+                    req.user._id || req.user.username,
                     false,
                     'create_user',
                     Object.assign(
@@ -183,6 +183,11 @@ router.post(
                                 _id: req.user._id,
                                 username: req.user.username,
                                 name: req.user.name
+                            },
+                            user: {
+                                _id: user,
+                                username: values.username,
+                                name: values.name
                             },
                             ip: req.ip
                         },
@@ -387,7 +392,7 @@ router.post(
                 }
 
                 await addToStream(
-                    userData._id,
+                    req.user._id || req.user.username,
                     false,
                     'edit_user',
                     Object.assign(
@@ -396,6 +401,11 @@ router.post(
                                 _id: req.user._id,
                                 username: req.user.username,
                                 name: req.user.name
+                            },
+                            user: {
+                                _id: userData._id,
+                                username: userData.username,
+                                name: userData.name
                             },
                             ip: req.ip
                         },
@@ -452,7 +462,7 @@ router.post(
             req.flash('success', 'User was deleted');
 
             await addToStream(
-                userData._id,
+                req.user._id || req.user.username,
                 false,
                 'delete_user',
                 Object.assign(
@@ -506,7 +516,7 @@ router.get(
         }
 
         await addToStream(
-            credentials._id,
+            req.user._id || req.user.username,
             false,
             'fetch_user_creds',
             Object.assign(

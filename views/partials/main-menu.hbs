@@ -19,6 +19,12 @@
                     <a class="nav-link" href="/users">Users</a>
                 </li>
                 {{/if}}
+
+                {{#if user.isRoot}}
+                <li class="nav-item {{#if mainMenuStream}}active{{/if}}">
+                    <a class="nav-link" href="/stream">Stream</a>
+                </li>
+                {{/if}}
             </ul>
 
             {{#if user}}

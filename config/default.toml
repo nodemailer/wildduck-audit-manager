@@ -9,6 +9,8 @@
     name = "Audit Manager"
     adminUrl = "https://audit-manager.wildduck.email/"
     clientUrl = "https://audit.wildduck.email/"
+    pageLimit = 3
+
     [app.pgp]
         #version = "WildDuck Audit v1.0.0"
         #comment = "https://wildduck.email"
