@@ -7,6 +7,8 @@ const audits = require('../../lib/audits');
 const Joi = require('@hapi/joi');
 const moment = require('moment');
 const URL = require('url').URL;
+const { addToStream } = require('../../lib/stream');
+const { ObjectID } = require('mongodb');
 
 router.get(
     '/',
@@ -168,6 +170,24 @@ router.post(
             };
 
             const audit = await audits.create(data);
+
+            await addToStream(
+                req.user._id || req.user.username,
+                audit,
+                'create_audit',
+                Object.assign(
+                    {
+                        owner: {
+                            _id: req.user._id,
+                            username: req.user.username,
+                            name: req.user.name
+                        },
+                        auditAccount: account,
+                        ip: req.ip
+                    },
+                    values
+                )
+            );
 
             req.flash('success', 'Account audit was created');
             res.redirect(`/audits?new=${audit}`);
@@ -340,6 +360,23 @@ router.post(
 
             if (updated) {
                 req.flash('success', 'Account audit was updated');
+
+                await addToStream(
+                    req.user._id || req.user.username,
+                    new ObjectID(values.id),
+                    'edit_audit',
+                    Object.assign(
+                        {
+                            owner: {
+                                _id: req.user._id,
+                                username: req.user.username,
+                                name: req.user.name
+                            },
+                            ip: req.ip
+                        },
+                        values
+                    )
+                );
             }
 
             res.redirect(`/audits/audit/${values.id}`);
@@ -413,6 +450,23 @@ router.get(
             err.status = 404;
             throw err;
         }
+
+        await addToStream(
+            req.user._id || req.user.username,
+            new ObjectID(values.id),
+            'fetch_audit_creds',
+            Object.assign(
+                {
+                    owner: {
+                        _id: req.user._id,
+                        username: req.user.username,
+                        name: req.user.name
+                    },
+                    ip: req.ip
+                },
+                values
+            )
+        );
 
         res.set('Content-Type', 'text/plain');
         res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');
@@ -489,6 +543,24 @@ router.post(
 
             if (creds) {
                 req.flash('success', 'Credentials created');
+
+                await addToStream(
+                    req.user._id || req.user.username,
+                    new ObjectID(values.audit),
+                    'create_audit_creds',
+                    Object.assign(
+                        {
+                            owner: {
+                                _id: req.user._id,
+                                username: req.user.username,
+                                name: req.user.name
+                            },
+                            ip: req.ip
+                        },
+                        values
+                    )
+                );
+
                 return res.redirect(`/audits/audit/${values.audit}?created_creds=${creds}`);
             } else {
                 throw new Error('Credentials were not created');
@@ -527,6 +599,24 @@ router.post(
         }
 
         await audits.deleteCredentials(values.id);
+
+        await addToStream(
+            req.user._id || req.user.username,
+            credentials._id,
+            'delete_audit_creds',
+            Object.assign(
+                {
+                    owner: {
+                        _id: req.user._id,
+                        username: req.user.username,
+                        name: req.user.name
+                    },
+                    ip: req.ip
+                },
+                values
+            )
+        );
+
         req.flash('success', 'Credentials deleted');
         return res.redirect(`/audits/audit/${credentials.audit}`);
     })
@@ -559,6 +649,24 @@ router.post(
         }
 
         await audits.deleteAudit(values.id);
+
+        await addToStream(
+            req.user._id || req.user.username,
+            auditData._id,
+            'delete_audit',
+            Object.assign(
+                {
+                    owner: {
+                        _id: req.user._id,
+                        username: req.user.username,
+                        name: req.user.name
+                    },
+                    ip: req.ip
+                },
+                values
+            )
+        );
+
         req.flash('success', 'Audit deleted');
         return res.redirect(`/audits`);
     })

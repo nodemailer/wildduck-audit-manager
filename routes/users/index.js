@@ -6,6 +6,7 @@ const { asyncifyRequest, validationErrors, checkPubKey, signFinger } = require('
 const users = require('../../lib/users');
 const Joi = require('@hapi/joi');
 const URL = require('url').URL;
+const { addToStream } = require('../../lib/stream');
 
 const levels = [
     { level: 'user', name: 'User', color: 'secondary' },
@@ -171,6 +172,24 @@ router.post(
 
             if (user) {
                 req.flash('success', 'User created');
+
+                await addToStream(
+                    user,
+                    false,
+                    'create_user',
+                    Object.assign(
+                        {
+                            owner: {
+                                _id: req.user._id,
+                                username: req.user.username,
+                                name: req.user.name
+                            },
+                            ip: req.ip
+                        },
+                        values
+                    )
+                );
+
                 return res.redirect(`/users?created_user=${user}`);
             } else {
                 throw new Error('User was not created');
@@ -367,6 +386,23 @@ router.post(
                     req.flash('success', 'User updated');
                 }
 
+                await addToStream(
+                    userData._id,
+                    false,
+                    'edit_user',
+                    Object.assign(
+                        {
+                            owner: {
+                                _id: req.user._id,
+                                username: req.user.username,
+                                name: req.user.name
+                            },
+                            ip: req.ip
+                        },
+                        values
+                    )
+                );
+
                 return res.redirect(`/users/user/${values.id}`);
             } else {
                 return res.redirect(`/users/user/${values.id}`);
@@ -414,6 +450,28 @@ router.post(
         const deleted = await users.delete(values.id);
         if (deleted) {
             req.flash('success', 'User was deleted');
+
+            await addToStream(
+                userData._id,
+                false,
+                'delete_user',
+                Object.assign(
+                    {
+                        owner: {
+                            _id: req.user._id,
+                            username: req.user.username,
+                            name: req.user.name
+                        },
+                        user: {
+                            _id: userData._id,
+                            username: userData.username,
+                            name: userData.name
+                        },
+                        ip: req.ip
+                    },
+                    values
+                )
+            );
         }
 
         return res.redirect(`/users`);
@@ -446,6 +504,28 @@ router.get(
             err.status = 404;
             throw err;
         }
+
+        await addToStream(
+            credentials._id,
+            false,
+            'fetch_user_creds',
+            Object.assign(
+                {
+                    owner: {
+                        _id: req.user._id,
+                        username: req.user.username,
+                        name: req.user.name
+                    },
+                    user: {
+                        _id: credentials._id,
+                        username: credentials.username,
+                        name: credentials.name
+                    },
+                    ip: req.ip
+                },
+                values
+            )
+        );
 
         res.set('Content-Type', 'text/plain');
         res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');

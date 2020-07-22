@@ -22,3 +22,19 @@ indexes:
           key:
               level: 1
               deleted: 1
+
+    - collection: auditstream
+      index:
+          name: stream_by_user
+          key:
+              user: 1
+              action: 1
+              audit: 1
+
+    - collection: auditstream
+      index:
+          name: stream_by_audit
+          key:
+              audit: 1
+              action: 1
+              user: 1
