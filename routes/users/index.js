@@ -7,6 +7,7 @@ const users = require('../../lib/users');
 const Joi = require('@hapi/joi');
 const URL = require('url').URL;
 const { addToStream } = require('../../lib/stream');
+const config = require('wild-config');
 
 const levels = [
     { level: 'user', name: 'User', color: 'secondary' },
@@ -93,7 +94,7 @@ router.post(
                 .max(256)
                 .trim()
                 .lowercase()
-                .invalid('root')
+                .invalid(config.root.username)
                 .required()
                 .example('admin')
                 .label('Username')

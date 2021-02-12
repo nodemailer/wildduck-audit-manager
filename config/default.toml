@@ -39,6 +39,7 @@
 [root]
     # default root user
     enabled = true
+    username = "root"
     # Command for generating password hash in Linux:
     #   echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | sha256sum | cut -d" " -f1
     # Or in OSX:

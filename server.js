@@ -16,6 +16,18 @@ const { Worker, SHARE_ENV } = require('worker_threads');
 const config = require('wild-config');
 process.title = config.process.title;
 
+if (
+    process.env.NODE_ENV === 'production' &&
+    config.root.enabled &&
+    config.root.passwordHash === '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'
+) {
+    console.error('--------');
+    console.error('Using default root password is not allowed in production mode.');
+    console.error('Update root.passwordHash option in the config file or disable root login.');
+    console.error('--------');
+    process.exit(1);
+}
+
 let closing = false;
 
 let workers = new Map();

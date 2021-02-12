@@ -7,11 +7,12 @@ const users = require('../../lib/users');
 const { PDKDF2_ITERATIONS, PDKDF2_SALT_SIZE, PDKDF2_DIGEST } = require('../../lib/consts');
 const Joi = require('@hapi/joi');
 const pbkdf2 = require('@phc/pbkdf2');
+const config = require('wild-config');
 
 router.get(
     '/',
     asyncifyRequest(async (req, res) => {
-        if (req.user.username === 'root') {
+        if (req.user.username === config.root.username) {
             return res.redirect('/users');
         }
 
@@ -37,7 +38,7 @@ router.get(
 router.get(
     '/edit',
     asyncifyRequest(async (req, res) => {
-        if (req.user.username === 'root') {
+        if (req.user.username === config.root.username) {
             return res.redirect('/users');
         }
 
@@ -65,7 +66,7 @@ router.get(
 router.post(
     '/edit',
     asyncifyRequest(async (req, res) => {
-        if (req.user.username === 'root') {
+        if (req.user.username === config.root.username) {
             return res.redirect('/users');
         }
 
