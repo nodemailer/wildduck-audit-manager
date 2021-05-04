@@ -246,7 +246,8 @@ router.get(
             layout: 'layouts/main',
             userData,
             fingerprint: userData.keyData.fingerprint.split(':').slice(-8).join('').toUpperCase(),
-            label: levels.find(level => userData.level === level.level)
+            label: levels.find(level => userData.level === level.level),
+            signFinger: signFinger()
         };
 
         res.render('users/user', data);

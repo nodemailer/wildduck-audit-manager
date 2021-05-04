@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = new express.Router();
-const { asyncifyRequest, validationErrors, checkPubKey, signFinger } = require('../../lib/tools');
+const { asyncifyRequest, validationErrors, checkPubKey, signFinger, signPubKey } = require('../../lib/tools');
 const audits = require('../../lib/audits');
 const Joi = require('@hapi/joi');
 const moment = require('moment');
@@ -53,6 +53,15 @@ router.get(
         }
 
         res.render('audits/index', data);
+    })
+);
+
+router.get(
+    '/signPubKey/:key',
+    asyncifyRequest(async (req, res) => {
+        res.set('Content-Type', 'text/plain');
+        res.setHeader('Content-disposition', `attachment; filename=${signFinger()}.asc`);
+        res.send(Buffer.from(signPubKey()));
     })
 );
 

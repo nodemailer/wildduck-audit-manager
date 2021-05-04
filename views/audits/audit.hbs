@@ -42,7 +42,8 @@
 
     <dt class="col-sm-3">Applicable time period</dt>
     <dd class="col-sm-9">From <span class="timestr" title="{{audit.display.start}}">{{audit.display.start}}</span> to
-        <span class="timestr" title="{{audit.display.end}}">{{audit.display.end}}</span></dd>
+        <span class="timestr" title="{{audit.display.end}}">{{audit.display.end}}</span>
+    </dd>
 
     <dt class="col-sm-3">Valid until</dt>
     <dd class="col-sm-9"><span class="timestr" title="{{audit.display.expires}}">{{audit.display.expires}}</span></dd>
@@ -71,10 +72,11 @@
         </div>
         Access credentials
     </h5>
+
     <div class="card-body">
         <p class="card-text">Valid credentials are needed to access audited data. Credentials are encrypted using
-            users's PGP public key and signed using <span
-                style="cursor:default; font-family: monospace;">{{signFinger}}</span>. Credential file can be downloaded
+            users's PGP public key and signed using <a href="/audits/signPubkey/{{signFinger}}.asc"
+                style="font-family: monospace;">{{signFinger}}</a>. Credential file can be downloaded
             only once.</p>
     </div>
 
