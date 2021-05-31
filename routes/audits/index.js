@@ -38,7 +38,7 @@ router.get(
             layout: 'layouts/main'
         };
 
-        data.listing = await audits.listAudits(page);
+        data.listing = await audits.listGroups(page);
 
         if (data.listing.page < data.listing.pages) {
             let url = new URL('audits', 'http://localhost');
@@ -98,7 +98,16 @@ router.post(
     '/new',
     asyncifyRequest(async (req, res) => {
         let loginSchema = Joi.object({
-            account: Joi.string().max(256).required().example('admin').label('Account').description('Username or email'),
+            name: Joi.string().empty('').max(256).trim().required().example('New audit').label('AuditName').description('Audit name'),
+            accounts: Joi.string()
+                .empty('')
+                .max(1024 * 1024)
+                .trim()
+                .required()
+                .example('admin')
+                .label('Accounts')
+                .description('List of usernames or email addresses'),
+
             daterangeStart: Joi.date().example('2020/01/02').label('Start date').description('Start date'),
             daterangeEnd: Joi.date().greater(Joi.ref('daterangeStart')).example('2020/01/02').label('End date').description('End date'),
             expires: Joi.date().greater('now').example('2020/01/02').label('Expiration date').description('Expiration date'),
@@ -151,39 +160,66 @@ router.post(
             return showErrors(errors);
         }
 
-        try {
-            const account = await audits.resolveUser(values.account);
-            if (!account) {
-                return showErrors({ account: 'Unknown account' });
-            }
+        let accounts = (values.accounts || '')
+            .split(/[,\n]/)
+            .map(a => a.trim())
+            .filter(a => a);
 
-            let start = values.daterangeStart ? moment(values.daterangeStart || now).format('YYYY-MM-DD') + 'T00:00:00Z' : null;
-            let end = values.daterangeEnd ? moment(values.daterangeEnd || now).format('YYYY-MM-DD') + 'T23:59:00Z' : null;
-            let expires = values.expires ? moment(values.expires || now).format('YYYY-MM-DD') + 'T00:00:00Z' : null;
+        let accountIds = new Set();
+        let accountList = [];
+        let failedAccounts = [];
 
-            const data = {
-                user: account._id,
-                start: start ? new Date(start) : null,
-                end: end ? new Date(end) : null,
-                expires: expires ? new Date(expires) : null,
-                notes: values.notes,
-                meta: {
-                    name: account.name,
-                    username: account.username,
-                    address: account.address,
-                    authlog: !!values.authlog,
-                    ip: req.ip,
-                    createdBy: req.user.username,
-                    created: new Date()
+        for (let username of accounts) {
+            try {
+                const account = await audits.resolveUser(username);
+                if (!account) {
+                    failedAccounts.push(`${username} unknown`);
                 }
-            };
+                if (!accountIds.has(account._id.toString())) {
+                    accountList.push(account);
+                    accountIds.add(account._id.toString());
+                }
+            } catch (err) {
+                failedAccounts.push(`${username}: ${err.message}`);
+            }
+        }
+        if (!accounts.length) {
+            failedAccounts.push(`no accounts provided`);
+        }
 
-            const audit = await audits.create(data);
+        if (failedAccounts.length) {
+            return showErrors({ accounts: failedAccounts.join(', ') });
+        }
+
+        let start = values.daterangeStart ? moment(values.daterangeStart || now).format('YYYY-MM-DD') + 'T00:00:00Z' : null;
+        let end = values.daterangeEnd ? moment(values.daterangeEnd || now).format('YYYY-MM-DD') + 'T23:59:00Z' : null;
+        let expires = values.expires ? moment(values.expires || now).format('YYYY-MM-DD') + 'T00:00:00Z' : null;
+
+        const groupData = {
+            name: values.name,
+            accounts: accountList,
+            start: start ? new Date(start) : null,
+            end: end ? new Date(end) : null,
+            expires: expires ? new Date(expires) : null,
+            notes: values.notes,
+            meta: {
+                authlog: !!values.authlog,
+                ip: req.ip,
+                createdBy: req.user.username,
+                createdById: req.user._id,
+                createdByName: req.user.name,
+                created: new Date()
+            }
+        };
+
+        try {
+            const result = await audits.createGroup(groupData);
+            console.log(result);
 
             await addToStream(
                 req.user._id || req.user.username,
-                audit,
-                'create_audit',
+                result.group,
+                'create_audit_group',
                 Object.assign(
                     {
                         owner: {
@@ -191,7 +227,7 @@ router.post(
                             username: req.user.username,
                             name: req.user.name
                         },
-                        auditAccount: account,
+                        auditAccounts: accountList.map(a => a._id),
                         ip: req.ip
                     },
                     values
@@ -199,7 +235,7 @@ router.post(
             );
 
             req.flash('success', 'Account audit was created');
-            res.redirect(`/audits?new=${audit}`);
+            res.redirect(`/audits?new=${result.group}`);
         } catch (err) {
             req.flash('danger', err.message);
             return showErrors(false, true);
@@ -261,8 +297,83 @@ router.get(
     })
 );
 
+const groupRouteHandler = async (req, res) => {
+    let auditListingSchema = Joi.object({
+        id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+    });
+
+    const validationResult = auditListingSchema.validate(req.params, {
+        stripUnknown: true,
+        abortEarly: false,
+        convert: true
+    });
+
+    if (validationResult.error) {
+        let err = new Error('Invalid audit ID provided');
+        err.status = 422;
+        throw err;
+    }
+    const values = (validationResult && validationResult.value) || {};
+    const groupData = await audits.getGroup(values.id);
+    if (!groupData) {
+        let err = new Error('Requested audit was not found');
+        err.status = 404;
+        throw err;
+    }
+
+    let credentials = await audits.listCredentials(groupData._id);
+
+    credentials = credentials.map(credential => {
+        if (credential && credential.keyData && credential.keyData.fingerprint) {
+            credential.keyData.fingerprint = credential.keyData.fingerprint.split(':').slice(-8).join('').toUpperCase();
+        }
+        credential.created = credential.created.toISOString();
+        return credential;
+    });
+
+    if (groupData.meta && groupData.meta.created) {
+        groupData.meta.created = groupData.meta.created.toISOString();
+    }
+
+    const data = {
+        title: 'Audit',
+        mainMenuAudit: true,
+        layout: 'layouts/main',
+
+        group: groupData,
+        credentials,
+        signFinger: signFinger()
+    };
+
+    res.render('audits/group', data);
+};
+
 router.get(
-    '/audit/:id/edit',
+    '/group/:id',
+    asyncifyRequest(async (req, res) => {
+        res.locals.accountsTab = true;
+        return groupRouteHandler(req, res);
+    })
+);
+
+router.get(
+    '/group/:id/accounts',
+    asyncifyRequest(async (req, res) => {
+        res.locals.accountsTab = true;
+        return groupRouteHandler(req, res);
+    })
+);
+
+router.get(
+    '/group/:id/credentials',
+    asyncifyRequest(async (req, res) => {
+        res.locals.credentialsTab = true;
+        return groupRouteHandler(req, res);
+    })
+);
+
+router.get(
+    '/group/:id/edit',
     asyncifyRequest(async (req, res) => {
         let auditListingSchema = Joi.object({
             id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
@@ -280,22 +391,22 @@ router.get(
             throw err;
         }
         const values = (validationResult && validationResult.value) || {};
-        const auditData = await audits.get(values.id);
-        if (!auditData) {
+        const groupData = await audits.getGroup(values.id);
+        if (!groupData) {
             let err = new Error('Requested audit was not found');
             err.status = 404;
             throw err;
         }
         const now = new Date();
-        auditData.expires = moment(auditData.expires || now).format('YYYY/MM/DD');
-        auditData.authlog = !!(auditData.meta && auditData.meta.authlog);
+        groupData.expires = moment(groupData.expires || now).format('YYYY/MM/DD');
+        groupData.authlog = !!(groupData.meta && groupData.meta.authlog);
 
         const data = {
             title: 'Edit',
             mainMenuAudit: true,
             layout: 'layouts/main',
-            audit: auditData,
-            values: auditData
+            group: groupData,
+            values: groupData
         };
 
         res.render('audits/edit', data);
@@ -329,8 +440,8 @@ router.post(
                 req.flash('danger', 'Failed to create account audit');
             }
 
-            const auditData = await audits.get(values.id);
-            if (!auditData) {
+            const groupData = await audits.getGroup(values.id);
+            if (!groupData) {
                 let err = new Error('Requested audit was not found');
                 err.status = 404;
                 throw err;
@@ -339,9 +450,9 @@ router.post(
             values.expires = moment(values.expires || now).format('YYYY/MM/DD');
 
             const data = {
-                title: 'Create audit',
+                title: 'Edit',
                 mainMenuAudit: true,
-                audit: auditData,
+                group: groupData,
 
                 values,
                 errors,
@@ -365,15 +476,15 @@ router.post(
                 'meta.authlog': values.authlog
             };
 
-            const updated = await audits.update(values.id, updates);
+            const updated = await audits.updateGroup(values.id, updates);
 
             if (updated) {
-                req.flash('success', 'Account audit was updated');
+                req.flash('success', 'Audit settings were updated');
 
                 await addToStream(
                     req.user._id || req.user.username,
                     new ObjectID(values.id),
-                    'edit_audit',
+                    'edit_audit_group',
                     Object.assign(
                         {
                             owner: {
@@ -388,11 +499,49 @@ router.post(
                 );
             }
 
-            res.redirect(`/audits/audit/${values.id}`);
+            res.redirect(`/audits/group/${values.id}`);
         } catch (err) {
             req.flash('danger', err.message);
             return showErrors(false, true);
         }
+    })
+);
+
+router.get(
+    '/group/:id/creds/new',
+    asyncifyRequest(async (req, res) => {
+        let auditListingSchema = Joi.object({
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+        });
+
+        const validationResult = auditListingSchema.validate(req.params, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        if (validationResult.error) {
+            let err = new Error('Invalid audit ID provided');
+            err.status = 422;
+            throw err;
+        }
+        const values = (validationResult && validationResult.value) || {};
+        const groupData = await audits.getGroup(values.id);
+        if (!groupData) {
+            let err = new Error('Requested audit was not found');
+            err.status = 404;
+            throw err;
+        }
+
+        const data = {
+            title: 'Create credentials',
+            mainMenuAudit: true,
+            layout: 'layouts/main',
+
+            group: groupData
+        };
+
+        res.render('audits/creds/group-new', data);
     })
 );
 
@@ -480,6 +629,113 @@ router.get(
         res.set('Content-Type', 'text/plain');
         res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');
         res.send(Buffer.from(credentials.credentials));
+    })
+);
+
+router.post(
+    '/creds/group-new',
+    asyncifyRequest(async (req, res) => {
+        let loginSchema = Joi.object({
+            group: Joi.string().empty('').hex().length(24).required().label('Audit ID'),
+            name: Joi.string().max(256).required().example('admin').label('Name').description('Name of the credentials holder'),
+            email: Joi.string().email().required().example('admin@example.com').label('Email').description('Email of the credentials holder'),
+            pgpPubKey: Joi.string()
+                .empty('')
+                .trim()
+                .max(65 * 1024)
+                .required()
+                .label('PGP Public Key')
+                .description('Public key for encryption'),
+            notes: Joi.string().empty('').trim().required().label('Notes').description('Reason for creating an audit')
+        });
+
+        const validationResult = loginSchema.validate(req.body, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        const values = (validationResult && validationResult.value) || {};
+        const groupData = await audits.getGroup(values.group);
+        if (!groupData) {
+            let err = new Error('Requested audit was not found');
+            err.status = 404;
+            throw err;
+        }
+
+        let showErrors = async (errors, disableDefault) => {
+            if (!disableDefault) {
+                req.flash('danger', 'Failed to create credentials');
+            }
+
+            const data = {
+                title: 'Create credentials',
+                mainMenuAudit: true,
+                layout: 'layouts/main',
+
+                group: groupData,
+
+                values,
+                errors
+            };
+            res.render('audits/creds/group-new', data);
+        };
+
+        if (validationResult.error) {
+            let errors = validationErrors(validationResult);
+            return await showErrors(errors);
+        }
+
+        const credsData = {
+            audit: values.group,
+            level: 'group',
+            name: values.name,
+            email: values.email,
+            pgpPubKey: values.pgpPubKey,
+            notes: values.notes,
+            ip: req.ip,
+            createdBy: req.user.username
+        };
+
+        try {
+            credsData.keyData = await checkPubKey(values.pgpPubKey);
+        } catch (err) {
+            return await showErrors({
+                pgpPubKey: 'PGP key validation failed. ' + err.message
+            });
+        }
+
+        try {
+            const creds = await audits.createCredentials(credsData);
+
+            if (creds) {
+                req.flash('success', 'Credentials created');
+
+                await addToStream(
+                    req.user._id || req.user.username,
+                    new ObjectID(values.group),
+                    'create_audit_creds_group',
+                    Object.assign(
+                        {
+                            owner: {
+                                _id: req.user._id,
+                                username: req.user.username,
+                                name: req.user.name
+                            },
+                            ip: req.ip
+                        },
+                        values
+                    )
+                );
+
+                return res.redirect(`/audits/group/${values.group}/credentials?created_creds=${creds}`);
+            } else {
+                throw new Error('Credentials were not created');
+            }
+        } catch (err) {
+            req.flash('danger', 'Failed to create credentials');
+            return showErrors(false, false);
+        }
     })
 );
 
@@ -585,7 +841,8 @@ router.post(
     '/creds/delete',
     asyncifyRequest(async (req, res) => {
         let auditListingSchema = Joi.object({
-            id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID'),
+            type: Joi.string().empty('').allow('group', 'audit').required().label('Entry type')
         });
 
         const validationResult = auditListingSchema.validate(req.body, {
@@ -599,6 +856,7 @@ router.post(
             err.status = 422;
             throw err;
         }
+
         const values = (validationResult && validationResult.value) || {};
         const credentials = await audits.getCredentials(values.id);
         if (!credentials) {
@@ -627,7 +885,7 @@ router.post(
         );
 
         req.flash('success', 'Credentials deleted');
-        return res.redirect(`/audits/audit/${credentials.audit}`);
+        return res.redirect(`/audits/${values.type}/${credentials.audit}/credentials`);
     })
 );
 
@@ -635,7 +893,8 @@ router.post(
     '/delete',
     asyncifyRequest(async (req, res) => {
         let auditListingSchema = Joi.object({
-            id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID'),
+            type: Joi.string().empty('').allow('group', 'audit').required().label('Entry type')
         });
 
         const validationResult = auditListingSchema.validate(req.body, {
@@ -650,31 +909,68 @@ router.post(
             throw err;
         }
         const values = (validationResult && validationResult.value) || {};
-        const auditData = await audits.get(values.id);
-        if (!auditData) {
-            let err = new Error('Requested audit was not found');
-            err.status = 404;
-            throw err;
-        }
 
-        await audits.deleteAudit(values.id);
-
-        await addToStream(
-            req.user._id || req.user.username,
-            auditData._id,
-            'delete_audit',
-            Object.assign(
+        switch (values.type) {
+            case 'audit':
                 {
-                    owner: {
-                        _id: req.user._id,
-                        username: req.user.username,
-                        name: req.user.name
-                    },
-                    ip: req.ip
-                },
-                values
-            )
-        );
+                    const auditData = await audits.get(values.id);
+                    if (!auditData) {
+                        let err = new Error('Requested audit was not found');
+                        err.status = 404;
+                        throw err;
+                    }
+
+                    await audits.deleteAudit(values.id);
+
+                    await addToStream(
+                        req.user._id || req.user.username,
+                        auditData._id,
+                        'delete_audit',
+                        Object.assign(
+                            {
+                                owner: {
+                                    _id: req.user._id,
+                                    username: req.user.username,
+                                    name: req.user.name
+                                },
+                                ip: req.ip
+                            },
+                            values
+                        )
+                    );
+                }
+                break;
+
+            case 'group':
+                {
+                    const groupData = await audits.getGroup(values.id);
+                    if (!groupData) {
+                        let err = new Error('Requested audit was not found');
+                        err.status = 404;
+                        throw err;
+                    }
+
+                    await audits.deleteGroup(values.id);
+
+                    await addToStream(
+                        req.user._id || req.user.username,
+                        groupData._id,
+                        'delete_audit_group',
+                        Object.assign(
+                            {
+                                owner: {
+                                    _id: req.user._id,
+                                    username: req.user.username,
+                                    name: req.user.name
+                                },
+                                ip: req.ip
+                            },
+                            values
+                        )
+                    );
+                }
+                break;
+        }
 
         req.flash('success', 'Audit deleted');
         return res.redirect(`/audits`);

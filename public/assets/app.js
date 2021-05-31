@@ -1,5 +1,5 @@
 /* globals document, $, moment, FileReader */
-/* eslint no-invalid-this:0 */
+/* eslint no-invalid-this:0, prefer-arrow-callback:0 */
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {

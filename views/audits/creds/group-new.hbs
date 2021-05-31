@@ -1,15 +1,15 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/audits">Audits</a></li>
-        <li class="breadcrumb-item"><a href="/audits/audit/{{audit._id}}">{{audit.display.name}}</a></li>
+        <li class="breadcrumb-item"><a href="/audits/group/{{group._id}}/credentials">{{group.display.name}}</a></li>
         <li class="breadcrumb-item active" aria-current="page">Create credentials</li>
     </ol>
 </nav>
 
-<form action="/audits/creds/new" method="post">
+<form action="/audits/creds/group-new" method="post">
     {{ csrf_token }}
-    <input type="hidden" name="audit" value="{{audit._id}}" />
-    <input type="hidden" name="type" value="audit" />
+    <input type="hidden" name="group" value="{{group._id}}" />
+    <input type="hidden" name="type" value="group" />
 
     <div class="form-group">
         <label for="name">Name</label>

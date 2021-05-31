@@ -1,22 +1,14 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/audits">Audits</a></li>
+        {{#if audit.group}}
+        <li class="breadcrumb-item"><a href="/audits/group/{{audit.group._id}}">{{audit.group.name}}</a></li>
+        {{/if}}
         <li class="breadcrumb-item active" aria-current="page">{{audit.display.name}}</li>
     </ol>
 </nav>
 
 <div class="float-right">
-
-    <a class="btn btn-primary btn-sm" href="/audits/audit/{{audit._id}}/edit" title="Edit audit details"
-        data-toggle="tooltip" data-placement="left">
-        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pencil" fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd"
-                d="M11.293 1.293a1 1 0 0 1 1.414 0l2 2a1 1 0 0 1 0 1.414l-9 9a1 1 0 0 1-.39.242l-3 1a1 1 0 0 1-1.266-1.265l1-3a1 1 0 0 1 .242-.391l9-9zM12 2l2 2-9 9-3 1 1-3 9-9z" />
-            <path fill-rule="evenodd"
-                d="M12.146 6.354l-2.5-2.5.708-.708 2.5 2.5-.707.708zM3 10v.5a.5.5 0 0 0 .5.5H4v.5a.5.5 0 0 0 .5.5H5v.5a.5.5 0 0 0 .5.5H6v-1.5a.5.5 0 0 0-.5-.5H5v-.5a.5.5 0 0 0-.5-.5H3z" />
-        </svg>
-    </a>
 
     <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteAudit">
         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor"
@@ -59,6 +51,7 @@
     <dd class="col-sm-9">{{audit.notes}}</dd>
 </dl>
 
+{{#if credentials}}
 <div class="card mb-3">
     <h5 class="card-header">
         <div class="float-right">
@@ -80,7 +73,6 @@
             only once.</p>
     </div>
 
-    {{#if credentials}}
     <div class="table-responsive mt-3">
         <table class="table table-hover">
             <thead>
@@ -134,7 +126,6 @@
             </tbody>
         </table>
     </div>
-    {{/if}}
 
     <div class="card-footer text-muted">
         Extracting credentials from the encrypted file:
@@ -143,6 +134,7 @@ gpg: Signature made using RSA key {{signFinger}}</pre>
     </div>
 
 </div>
+{{/if}}
 
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
     aria-hidden="true">
@@ -161,6 +153,7 @@ gpg: Signature made using RSA key {{signFinger}}</pre>
                 <form method="post" action="/audits/creds/delete">
                     {{ csrf_token }}
                     <input type="hidden" name="id" id="deleteCredentials" value="" />
+                    <input type='hidden' name='type' value='audit' />
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
@@ -174,18 +167,19 @@ gpg: Signature made using RSA key {{signFinger}}</pre>
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteAuditLabel">Delete audit</h5>
+                <h5 class="modal-title" id="deleteAuditLabel">Delete account from audit</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this audit? You can not revoke this action.</p>
+                <p>Are you sure you want to delete this account from the audit? You can not revoke this action.</p>
             </div>
             <div class="modal-footer">
                 <form method="post" action="/audits/delete">
                     {{ csrf_token }}
                     <input type="hidden" name="id" value="{{audit._id}}" />
+                    <input type="hidden" name="type" value="audit" />
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>

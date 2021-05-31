@@ -1,14 +1,14 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/audits">Audits</a></li>
-        <li class="breadcrumb-item"><a href="/audits/audit/{{audit._id}}">{{audit.display.name}}</a></li>
+        <li class="breadcrumb-item"><a href="/audits/group/{{group._id}}">{{group.display.name}}</a></li>
         <li class="breadcrumb-item active" aria-current="page">Edit</li>
     </ol>
 </nav>
 
 <form action="/audits/edit" method="post">
     {{ csrf_token }}
-    <input type="hidden" name="id" value="{{audit._id}}">
+    <input type="hidden" name="id" value="{{group._id}}">
 
     <div class="form-group">
         <label for="expires">Audit expires</label>
@@ -50,7 +50,7 @@
             {{errors.authlog}}
         </div>
         {{/if}}
-        <small class="form-text text-muted">Include authentication log as part of the audit.</small>
+        <small class="form-text text-muted">Include authentication log as part of the group.</small>
     </div>
     -->
 

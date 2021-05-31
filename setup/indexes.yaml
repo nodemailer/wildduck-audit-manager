@@ -38,3 +38,16 @@ indexes:
               audit: 1
               action: 1
               user: 1
+
+    - collection: auditgroups
+      index:
+          name: expire_time
+          key:
+              expires: 1
+              deleted: 1
+
+    - collection: audits
+      index:
+          name: by_group
+          key:
+              'meta.group': 1

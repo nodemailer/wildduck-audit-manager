@@ -77,9 +77,8 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th scope="col">Status</th>
                 <th scope="col">Name</th>
-                <th scope="col">Email</th>
+                <th scope="col">Accounts</th>
                 <th scope="col">Period</th>
                 <th scope="col" colspan="2" Expires</th>
             </tr>
@@ -88,13 +87,10 @@
             {{#each listing.data}}
             <tr>
                 <td style="vertical-align: middle;">
-                    <span class="badge badge-{{display.status.type}}">{{display.status.title}}</span>
-                </td>
-                <td style="vertical-align: middle;">
                     {{display.name}}
                 </td>
                 <td style="vertical-align: middle;">
-                    {{display.address}}
+                    {{display.addresses}}
                 </td>
                 <td style="vertical-align: middle;">
                     {{#if display.start}}
@@ -114,12 +110,12 @@
                     {{/if}}
                 </td>
                 <td style="vertical-align: middle;">
-                    <span class="timestr" href="/audits/audit/{{_id}}" title="{{display.expires}}">
+                    <span class="timestr" href="/audits/group/{{_id}}" title="{{display.expires}}">
                         {{display.expires}}
                     </span>
                 </td>
-                <td style="vertical-align: middle;">
-                    <a href="/audits/audit/{{_id}}" class="btn btn-primary btn-sm" title="Go to audit details"
+                <td style="vertical-align: middle; text-align: right">
+                    <a href="/audits/group/{{_id}}" class="btn btn-primary btn-sm" title="Go to audit details"
                         data-toggle="tooltip" data-placement="left">
                         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-square"
                             fill="currentColor" xmlns="http://www.w3.org/2000/svg">

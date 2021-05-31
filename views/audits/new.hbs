@@ -12,15 +12,27 @@
     <input type="hidden" id="daterangeEnd" name="daterangeEnd" value="{{values.daterangeEnd}}">
 
     <div class="form-group">
-        <label for="username">Account</label>
-        <input type="text" class="form-control {{#if errors.account}}is-invalid{{/if}} account" id="account"
-            name="account" value="{{values.account}}" required>
-        {{#if errors.account}}
+        <label for="name">Name</label>
+        <input type="text" class="form-control {{#if errors.name}}is-invalid{{/if}}" id="name"
+            name="name" value="{{values.name}}" required>
+        {{#if errors.name}}
         <div class="invalid-feedback">
-            {{errors.account}}
+            {{errors.name}}
         </div>
         {{/if}}
-        <small class="form-text text-muted">Username, email address or account ID.</small>
+        <small class="form-text text-muted">Name for the audit, displayed in audit lists</small>
+    </div>
+
+    <div class="form-group">
+        <label for="accounts">Accounts</label>
+        <textarea class="form-control {{#if errors.accounts}}is-invalid{{/if}} accounts" id="accounts" name="accounts" rows="3"
+            required>{{values.accounts}}</textarea>
+        {{#if errors.accounts}}
+        <div class="invalid-feedback">
+            {{errors.accounts}}
+        </div>
+        {{/if}}
+        <small class="form-text text-muted">Comma separated list of usernames, email addresses or account IDs</small>
     </div>
 
     <div class="form-group">
