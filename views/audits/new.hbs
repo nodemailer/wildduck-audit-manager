@@ -13,8 +13,8 @@
 
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" class="form-control {{#if errors.name}}is-invalid{{/if}}" id="name"
-            name="name" value="{{values.name}}" required>
+        <input type="text" class="form-control {{#if errors.name}}is-invalid{{/if}}" id="name" name="name"
+            value="{{values.name}}" required>
         {{#if errors.name}}
         <div class="invalid-feedback">
             {{errors.name}}
@@ -25,14 +25,15 @@
 
     <div class="form-group">
         <label for="accounts">Accounts</label>
-        <textarea class="form-control {{#if errors.accounts}}is-invalid{{/if}} accounts" id="accounts" name="accounts" rows="3"
-            required>{{values.accounts}}</textarea>
+        <textarea class="form-control {{#if errors.accounts}}is-invalid{{/if}} accounts" id="accounts" name="accounts"
+            rows="3" required>{{values.accounts}}</textarea>
         {{#if errors.accounts}}
         <div class="invalid-feedback">
             {{errors.accounts}}
         </div>
         {{/if}}
-        <small class="form-text text-muted">Comma separated list of usernames, email addresses or account IDs</small>
+        <small class="form-text text-muted">Comma or newline separated list of usernames, email addresses or account
+            IDs</small>
     </div>
 
     <div class="form-group">

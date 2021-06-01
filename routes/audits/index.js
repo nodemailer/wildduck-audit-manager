@@ -173,7 +173,7 @@ router.post(
             try {
                 const account = await audits.resolveUser(username);
                 if (!account) {
-                    failedAccounts.push(`${username} unknown`);
+                    failedAccounts.push(`${username}: unknown`);
                 } else if (!accountIds.has(account._id.toString())) {
                     accountList.push(account);
                     accountIds.add(account._id.toString());
