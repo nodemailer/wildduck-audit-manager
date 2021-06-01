@@ -174,8 +174,7 @@ router.post(
                 const account = await audits.resolveUser(username);
                 if (!account) {
                     failedAccounts.push(`${username} unknown`);
-                }
-                if (!accountIds.has(account._id.toString())) {
+                } else if (!accountIds.has(account._id.toString())) {
                     accountList.push(account);
                     accountIds.add(account._id.toString());
                 }
@@ -183,6 +182,7 @@ router.post(
                 failedAccounts.push(`${username}: ${err.message}`);
             }
         }
+
         if (!accounts.length) {
             failedAccounts.push(`no accounts provided`);
         }
