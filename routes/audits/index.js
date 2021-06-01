@@ -83,8 +83,8 @@ router.get(
 
             values: {
                 expires: `${now.getFullYear()}/12/31`,
-                daterangeStart: `${now.getFullYear()}/01/01`,
-                daterangeEnd: `${now.getFullYear()}/${formatNr(now.getMonth() + 1)}/${formatNr(now.getDate())}`
+                daterangeStart: `1970/01/01`,
+                daterangeEnd: `${now.getFullYear() + 1}/${formatNr(now.getMonth() + 1)}/${formatNr(now.getDate())}`
             },
 
             layout: 'layouts/main'
