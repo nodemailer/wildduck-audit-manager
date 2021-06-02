@@ -342,6 +342,9 @@ const groupRouteHandler = async (req, res) => {
 
         group: groupData,
         credentials,
+
+        credentialsCount: credentials.length,
+
         signFinger: signFinger()
     };
 
@@ -629,6 +632,39 @@ router.get(
         res.set('Content-Type', 'text/plain');
         res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');
         res.send(Buffer.from(credentials.credentials));
+    })
+);
+
+router.get(
+    '/creds/pubkey/:id/:key',
+    asyncifyRequest(async (req, res) => {
+        let auditListingSchema = Joi.object({
+            id: Joi.string().empty('').hex().length(24).required().label('Audit ID')
+        });
+
+        const validationResult = auditListingSchema.validate(req.params, {
+            stripUnknown: true,
+            abortEarly: false,
+            convert: true
+        });
+
+        if (validationResult.error) {
+            let err = new Error('Invalid credentials ID provided');
+            err.status = 422;
+            throw err;
+        }
+
+        const values = (validationResult && validationResult.value) || {};
+        const credentials = await audits.getCredentialDetails(values.id);
+        if (!credentials || !credentials.pgpPubKey || !credentials.keyData) {
+            let err = new Error('Requested credentials were not found');
+            err.status = 404;
+            throw err;
+        }
+
+        res.set('Content-Type', 'text/plain');
+        res.setHeader('Content-disposition', `attachment; filename=${credentials.keyData.fingerprint.split(':').slice(-8).join('').toUpperCase()}.asc`);
+        res.send(Buffer.from(credentials.pgpPubKey));
     })
 );
 
