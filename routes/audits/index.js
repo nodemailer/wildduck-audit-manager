@@ -214,7 +214,6 @@ router.post(
 
         try {
             const result = await audits.createGroup(groupData);
-            console.log(result);
 
             await addToStream(
                 req.user._id || req.user.username,

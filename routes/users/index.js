@@ -201,6 +201,7 @@ router.post(
                 throw new Error('User was not created');
             }
         } catch (err) {
+            console.error(err);
             req.flash('danger', 'Failed to create user');
             return showErrors(false, false);
         }
