@@ -55,6 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
         elm.textContent = moment(elm.title).format('ll');
     }
 
+    for (let elm of document.querySelectorAll('.fulltimestr')) {
+        elm.textContent = moment(elm.title).format('YYYY-MM-DD HH:mm');
+    }
+
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
     });

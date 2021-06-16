@@ -226,7 +226,7 @@ router.post(
                             username: req.user.username,
                             name: req.user.name
                         },
-                        auditAccounts: accountList.map(a => a._id),
+                        auditAccounts: accountList,
                         ip: req.ip
                     },
                     values
@@ -757,7 +757,8 @@ router.post(
                                 username: req.user.username,
                                 name: req.user.name
                             },
-                            ip: req.ip
+                            ip: req.ip,
+                            keyData: credsData.keyData
                         },
                         values
                     )

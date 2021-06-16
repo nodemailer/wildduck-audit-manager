@@ -64,35 +64,58 @@
 </nav>
 
 <div class="table-responsive">
-    <table class="table table-hover table-striped">
+    <table class="table table-hover table-striped table-sm">
         <thead>
             <tr>
                 <th scope="col">Action</th>
                 <th scope="col">User</th>
                 <th scope="col">Audit</th>
                 <th scope="col">IP</th>
-                <th scope="col">PGP key</th>
                 <th scope="col">Time</th>
-
             </tr>
         </thead>
         <tbody>
             {{#each listing.data}}
             <tr>
 
-                <td style="vertical-align: middle;">{{display.action.name}}</td>
-                <td style="vertical-align: middle; cursor:default; "
-                    title="{{display.owner.name}} [{{display.owner._id}}];" data-toggle="tooltip" data-placement="left">
-                    {{display.owner.username}}</td>
-                <td style="vertical-align: middle;">{{audit}}</td>
-                <td style="vertical-align: middle;">{{display.ip}}</td>
-                <td style="vertical-align: middle;"><span
-                        title="{{display.keyData.name}} &lt;{{display.keyData.address}}&gt;" data-toggle="tooltip"
-                        data-placement="left"
-                        style="cursor:default; font-family: monospace;">{{display.keyData.fingerprint}}</span>
+                <td style="vertical-align: top;">{{display.action.name}}</td>
+                <td style="vertical-align: top; cursor:default; ">
+                    {{display.owner.username}}
                 </td>
-                <td style="vertical-align: middle;" class="datetimestr" title="{{display.created}}"
-                    data-toggle="tooltip" data-placement="left"></td>
+
+                <td style="vertical-align: top;">
+                    {{#if audit}}
+                    <a href="/audits/{{display.auditType}}/{{audit}}">{{audit}}</a>
+                    {{/if}}
+
+                    {{#if display.keyData}}
+                    <div>
+
+                        <div class="hover-label" title="{{display.keyData.name}} &lt;{{display.keyData.address}}&gt;"
+                            data-toggle="tooltip" data-placement="top" style="cursor:default;">
+
+                            {{#if display.name}}<span>{{display.name}}</span>{{/if}}
+
+                            <span style="font-family: monospace;">
+                                {{display.keyData.fingerprint}}</span>
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    {{#if display.auditAccounts}}
+                    <div>
+                        {{#each display.auditAccounts}}
+                        <div class="hover-label" title="{{name}} [{{username}}]" data-toggle="tooltip"
+                            data-placement="left" style="cursor:default;">{{address}}</div>
+                        {{/each}}
+                    </div>
+                    {{/if}}
+                </td>
+
+                <td style="vertical-align: top;">{{display.ip}}</td>
+
+                <td style="vertical-align: top;" class="fulltimestr" title="{{display.created}}" data-toggle="tooltip"
+                    data-placement="top"></td>
 
             </tr>
             {{/each}}

@@ -43,3 +43,13 @@ a.fullcell {
 .dragover {
     box-shadow: 2px 2px #888888;
 }
+
+.hover-label {
+    display: inline-block;
+    border-radius: 3px;
+    cursor: default;
+}
+
+.hover-label:hover {
+    background: #ccc;
+}
