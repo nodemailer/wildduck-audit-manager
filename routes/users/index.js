@@ -492,7 +492,7 @@ router.post(
 );
 
 router.get(
-    '/fetch/:id/credentials.gpg',
+    '/fetch/:id/credentials.csv.gpg',
     asyncifyRequest(async (req, res) => {
         let auditListingSchema = Joi.object({
             id: Joi.string().empty('').hex().length(24).required().label('User ID')
@@ -541,7 +541,7 @@ router.get(
         );
 
         res.set('Content-Type', 'text/plain');
-        res.setHeader('Content-disposition', 'attachment; filename=credentials.gpg');
+        res.setHeader('Content-disposition', 'attachment; filename=credentials.csv.gpg');
         res.send(Buffer.from(credentials.credentials));
     })
 );

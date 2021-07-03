@@ -184,7 +184,7 @@
                         <td class='text-right' style='vertical-align: middle;'>
 
                             {{#if credentials}}
-                            <a href='/audits/creds/fetch/{{_id}}/credentials.gpg'
+                            <a href='/audits/creds/fetch/{{_id}}/credentials.csv.gpg'
                                 class='btn btn-warning btn-sm click-once' title='Download encrypted credentials'
                                 data-toggle='tooltip' data-placement='left'><svg width='1em' height='1em'
                                     viewBox='0 0 16 16' class='bi bi-cloud-download' fill='currentColor'
@@ -229,7 +229,7 @@
             </div>
             <div class='card-footer text-muted'>
                 <div>Extracting credentials from the encrypted file:
-                    <pre>$ gpg --decrypt credentials.gpg &gt; credentials.csv
+                    <pre>$ gpg --decrypt credentials.csv.gpg &gt; credentials.csv
 gpg: Signature made using RSA key {{signFinger}}</pre>
                 </div>
 
