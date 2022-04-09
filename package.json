@@ -33,7 +33,7 @@
         "ioredis": "4.27.6",
         "js-yaml": "4.1.0",
         "libmime": "5.0.0",
-        "moment": "2.29.1",
+        "moment": "2.29.2",
         "mongodb": "3.6.9",
         "nodemailer": "6.6.2",
         "openpgp": "5.0.0-3",
