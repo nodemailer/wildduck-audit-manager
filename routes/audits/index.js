@@ -176,8 +176,6 @@ router.post(
                     // check for deleted
                     const deletedAccount = await audits.resolveDeletedUser(username);
 
-                    console.log('got deleted accoubt', deletedAccount);
-
                     if (!deletedAccount) {
                         failedAccounts.push(`${username}: unknown`);
                     } else if (!accountIds.has(deletedAccount._id.toString())) {
