@@ -173,7 +173,17 @@ router.post(
             try {
                 const account = await audits.resolveUser(username);
                 if (!account) {
-                    failedAccounts.push(`${username}: unknown`);
+                    // check for deleted
+                    const deletedAccount = await audits.resolveDeletedUser(username);
+
+                    console.log('got deleted accoubt', deletedAccount);
+
+                    if (!deletedAccount) {
+                        failedAccounts.push(`${username}: unknown`);
+                    } else if (!accountIds.has(deletedAccount._id.toString())) {
+                        accountList.push(deletedAccount);
+                        accountIds.add(deletedAccount._id.toString());
+                    }
                 } else if (!accountIds.has(account._id.toString())) {
                     accountList.push(account);
                     accountIds.add(account._id.toString());
