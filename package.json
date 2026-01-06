@@ -43,6 +43,6 @@
         "pino-http": "5.5.0",
         "shortid": "2.2.16",
         "wild-config": "1.5.1",
-        "wildduck": "1.33.5"
+        "wildduck": "1.46.14"
     }
 }
