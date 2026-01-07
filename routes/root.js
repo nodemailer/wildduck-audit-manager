@@ -36,9 +36,9 @@ router.get(
     })
 );
 
-router.get('/logout', (req, res) => {
+router.get('/logout', (req, res, next) => {
     req.flash(); // clear pending messages
-    logout(req, res);
+    logout(req, res, next);
 });
 
 router.post('/login', (req, res, next) => {
